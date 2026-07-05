@@ -20,7 +20,9 @@ export function TenantPlaceholder() {
   const whatsappUrl = waHref(settings.contact_whatsapp, DEMO_MSG);
   const emailUrl = `mailto:${settings.contact_email}?subject=${encodeURIComponent("Demo request — Academy OS")}`;
 
+  return (
     <div className="min-h-screen w-full bg-[#050505] text-zinc-100 selection:bg-purple-500/30 font-[Inter,ui-sans-serif,system-ui] overflow-x-hidden">
+
       {/* Ambient background glow */}
       <div className="pointer-events-none fixed inset-x-0 top-0 -z-10 flex justify-center">
         <div className="h-[520px] w-[900px] max-w-full rounded-full bg-purple-600/15 blur-[140px]" />
