@@ -1,5 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
+import type { Tenant } from "./tenant";
+import { candidatePeriods, periodKey, studentDue, tenantFeeCycle } from "./fees";
 
 export type Student = Database["public"]["Tables"]["students"]["Row"];
 export type Registration = Database["public"]["Tables"]["registrations"]["Row"];
@@ -18,6 +20,9 @@ export const qk = {
   studentPayments: (id: string) => ["d", "payments", "student", id] as const,
   site: (t: string) => ["d", "site", t] as const,
   kpis: (t: string) => ["d", "kpis", t] as const,
+  feeRegister: (t: string, month: string) => ["d", "fees", t, month] as const,
+  monthCollection: (t: string) => ["d", "fees", "collected", t] as const,
+  report: (t: string) => ["d", "report", t] as const,
 };
 
 export async function fetchRegistrations(tenantId: string) {
@@ -97,23 +102,40 @@ export type Kpis = {
   pendingFeeCount: number;
 };
 
-export async function fetchKpis(tenantId: string): Promise<Kpis> {
+export async function fetchKpis(tenant: Tenant): Promise<Kpis> {
+  const tenantId = tenant.id;
+  const cycle = tenantFeeCycle(tenant);
   const now = new Date();
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
   const weekAgo = new Date(Date.now() - 7 * 86400 * 1000).toISOString();
-  const period = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  const periods = cycle === "joining_date" ? candidatePeriods(now) : [periodKey(now)];
 
-  const [active, regs, pays, studentsMonthly, paidThisMonth] = await Promise.all([
+  const [active, regs, pays, studentsMonthly, paidRows] = await Promise.all([
     supabase.from("students").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId).eq("status", "active"),
     supabase.from("registrations").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId).gte("created_at", weekAgo),
     supabase.from("payments").select("amount").eq("tenant_id", tenantId).gte("created_at", startOfMonth),
-    supabase.from("students").select("id, fee_plan_id, fee_plans!inner(type)").eq("tenant_id", tenantId).eq("status", "active").eq("fee_plans.type", "monthly"),
-    supabase.from("payments").select("student_id").eq("tenant_id", tenantId).eq("type", "monthly").eq("period", period),
+    supabase.from("students").select("id, joined_at, fee_plan_id, fee_plans!inner(type)").eq("tenant_id", tenantId).eq("status", "active").eq("fee_plans.type", "monthly"),
+    supabase.from("payments").select("student_id, period").eq("tenant_id", tenantId).in("period", periods),
   ]);
 
   const collection = (pays.data ?? []).reduce((s, p) => s + Number(p.amount || 0), 0);
-  const paidIds = new Set((paidThisMonth.data ?? []).map((p) => p.student_id));
-  const pending = (studentsMonthly.data ?? []).filter((s) => !paidIds.has(s.id)).length;
+  const paidByStudent = new Map<string, Set<string>>();
+  for (const p of paidRows.data ?? []) {
+    if (!p.student_id || !p.period) continue;
+    const set = paidByStudent.get(p.student_id) ?? new Set<string>();
+    set.add(p.period);
+    paidByStudent.set(p.student_id, set);
+  }
+  const pending = (studentsMonthly.data ?? []).filter((s) => {
+    const due = studentDue({
+      cycle,
+      joinedAt: s.joined_at,
+      selectedMonth: now,
+      paidPeriods: paidByStudent.get(s.id) ?? new Set(),
+      today: now,
+    });
+    return due.state === "pending";
+  }).length;
 
   return {
     activeStudents: active.count ?? 0,
@@ -121,4 +143,27 @@ export async function fetchKpis(tenantId: string): Promise<Kpis> {
     collectionThisMonth: collection,
     pendingFeeCount: pending,
   };
+}
+
+/** Payments carrying any of the given period keys (fee register paid-lookup). */
+export async function fetchPaymentsForPeriods(tenantId: string, periods: string[]) {
+  const { data, error } = await supabase
+    .from("payments")
+    .select("id, student_id, period, amount, method, type, receipt_no, created_at")
+    .eq("tenant_id", tenantId)
+    .in("period", periods);
+  if (error) throw error;
+  return data ?? [];
+}
+
+/** All payments since a date, with student names (reports + CSV export). */
+export async function fetchPaymentsSince(tenantId: string, sinceISO: string) {
+  const { data, error } = await supabase
+    .from("payments")
+    .select("id, amount, type, period, method, receipt_no, note, created_at, students(name)")
+    .eq("tenant_id", tenantId)
+    .gte("created_at", sinceISO)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return data ?? [];
 }

@@ -2,16 +2,61 @@ import { supabase } from "@/integrations/supabase/client";
 
 const BUCKET = "tenant-assets";
 
+const COMPRESS_MAX_DIM = 1600;
+const COMPRESS_MIN_BYTES = 300 * 1024;
+
+/**
+ * Downscale + re-encode large photos as WebP (preserves logo transparency) before upload.
+ * Coaches upload 5–10 MB phone photos; the site only ever needs ~200 KB.
+ * Falls back to the original file for SVG/GIF, small files, or any codec failure.
+ */
+async function maybeCompressImage(file: File): Promise<{ blob: Blob; ext: string; contentType: string }> {
+  const original = {
+    blob: file as Blob,
+    ext: file.name.split(".").pop() ?? "bin",
+    contentType: file.type || "application/octet-stream",
+  };
+  const skip =
+    typeof document === "undefined" ||
+    !file.type.startsWith("image/") ||
+    file.type === "image/svg+xml" ||
+    file.type === "image/gif" ||
+    file.size < COMPRESS_MIN_BYTES;
+  if (skip) return original;
+
+  try {
+    const bitmap = await createImageBitmap(file);
+    const scale = Math.min(1, COMPRESS_MAX_DIM / Math.max(bitmap.width, bitmap.height));
+    const width = Math.max(1, Math.round(bitmap.width * scale));
+    const height = Math.max(1, Math.round(bitmap.height * scale));
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return original;
+    ctx.drawImage(bitmap, 0, 0, width, height);
+    bitmap.close();
+    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/webp", 0.82));
+    if (blob && blob.size > 0 && blob.size < file.size) {
+      return { blob, ext: "webp", contentType: "image/webp" };
+    }
+  } catch {
+    // fall through to original
+  }
+  return original;
+}
+
 export async function uploadTenantFile(
   tenantId: string,
   folder: string,
   file: File,
 ): Promise<string> {
-  const ext = file.name.split(".").pop() ?? "bin";
+  const { blob, ext, contentType } = await maybeCompressImage(file);
   const path = `${tenantId}/${folder}/${crypto.randomUUID()}.${ext}`;
-  const { error } = await supabase.storage.from(BUCKET).upload(path, file, {
+  const { error } = await supabase.storage.from(BUCKET).upload(path, blob, {
     cacheControl: "3600",
     upsert: false,
+    contentType,
   });
   if (error) throw error;
   return path;

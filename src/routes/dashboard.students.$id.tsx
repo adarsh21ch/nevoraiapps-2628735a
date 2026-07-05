@@ -11,9 +11,10 @@ import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, Dialog
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Phone, MessageCircle, Edit, Plus, ArrowLeft } from "lucide-react";
+import { Phone, MessageCircle, Edit, Plus, ArrowLeft, Download } from "lucide-react";
 import { toast } from "sonner";
 import { StudentDialog } from "./dashboard.students";
+import { generateReceiptPdf } from "@/lib/receipt-pdf";
 
 export const Route = createFileRoute("/dashboard/students/$id")({
   component: StudentDetail,
@@ -122,7 +123,27 @@ function StudentDetail() {
                   {p.note ? ` · ${p.note}` : ""}
                 </div>
               </div>
-              <div className="text-xs text-muted-foreground">#{p.receipt_no}</div>
+              <div className="flex items-center gap-1">
+                <div className="text-xs text-muted-foreground">#{p.receipt_no}</div>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  aria-label="Download receipt"
+                  onClick={() =>
+                    generateReceiptPdf(tenant, {
+                      receiptNo: p.receipt_no,
+                      studentName: s.name,
+                      amount: Number(p.amount),
+                      type: p.type,
+                      period: p.period,
+                      method: p.method,
+                      paidAt: p.created_at,
+                    })
+                  }
+                >
+                  <Download className="size-4" />
+                </Button>
+              </div>
             </div>
           ))}
           {(payments.data ?? []).length === 0 && (

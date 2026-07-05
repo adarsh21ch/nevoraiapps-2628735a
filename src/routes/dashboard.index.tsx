@@ -13,7 +13,7 @@ function DashboardHome() {
   const { tenant } = useDashboard();
   const { data, isLoading } = useQuery({
     queryKey: qk.kpis(tenant.id),
-    queryFn: () => fetchKpis(tenant.id),
+    queryFn: () => fetchKpis(tenant),
   });
 
   const kpis = [

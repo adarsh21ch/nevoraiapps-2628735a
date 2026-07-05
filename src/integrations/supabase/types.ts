@@ -382,6 +382,7 @@ export type Database = {
           custom_domain: string | null
           email: string | null
           features: Json
+          fee_cycle: string
           id: string
           logo_url: string | null
           name: string
@@ -402,6 +403,7 @@ export type Database = {
           custom_domain?: string | null
           email?: string | null
           features?: Json
+          fee_cycle?: string
           id?: string
           logo_url?: string | null
           name: string
@@ -422,6 +424,7 @@ export type Database = {
           custom_domain?: string | null
           email?: string | null
           features?: Json
+          fee_cycle?: string
           id?: string
           logo_url?: string | null
           name?: string

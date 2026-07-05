@@ -20,7 +20,9 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard.index'
 import { Route as DashboardStudentsRouteImport } from './routes/dashboard.students'
 import { Route as DashboardSiteRouteImport } from './routes/dashboard.site'
+import { Route as DashboardReportsRouteImport } from './routes/dashboard.reports'
 import { Route as DashboardRegistrationsRouteImport } from './routes/dashboard.registrations'
+import { Route as DashboardFeesRouteImport } from './routes/dashboard.fees'
 import { Route as DashboardFeePlansRouteImport } from './routes/dashboard.fee-plans'
 import { Route as DashboardBatchesRouteImport } from './routes/dashboard.batches'
 import { Route as DashboardStudentsIdRouteImport } from './routes/dashboard.students.$id'
@@ -80,9 +82,19 @@ const DashboardSiteRoute = DashboardSiteRouteImport.update({
   path: '/site',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardReportsRoute = DashboardReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const DashboardRegistrationsRoute = DashboardRegistrationsRouteImport.update({
   id: '/registrations',
   path: '/registrations',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardFeesRoute = DashboardFeesRouteImport.update({
+  id: '/fees',
+  path: '/fees',
   getParentRoute: () => DashboardRoute,
 } as any)
 const DashboardFeePlansRoute = DashboardFeePlansRouteImport.update({
@@ -112,7 +124,9 @@ export interface FileRoutesByFullPath {
   '/star-players': typeof StarPlayersRoute
   '/dashboard/batches': typeof DashboardBatchesRoute
   '/dashboard/fee-plans': typeof DashboardFeePlansRoute
+  '/dashboard/fees': typeof DashboardFeesRoute
   '/dashboard/registrations': typeof DashboardRegistrationsRoute
+  '/dashboard/reports': typeof DashboardReportsRoute
   '/dashboard/site': typeof DashboardSiteRoute
   '/dashboard/students': typeof DashboardStudentsRouteWithChildren
   '/dashboard/': typeof DashboardIndexRoute
@@ -128,7 +142,9 @@ export interface FileRoutesByTo {
   '/star-players': typeof StarPlayersRoute
   '/dashboard/batches': typeof DashboardBatchesRoute
   '/dashboard/fee-plans': typeof DashboardFeePlansRoute
+  '/dashboard/fees': typeof DashboardFeesRoute
   '/dashboard/registrations': typeof DashboardRegistrationsRoute
+  '/dashboard/reports': typeof DashboardReportsRoute
   '/dashboard/site': typeof DashboardSiteRoute
   '/dashboard/students': typeof DashboardStudentsRouteWithChildren
   '/dashboard': typeof DashboardIndexRoute
@@ -146,7 +162,9 @@ export interface FileRoutesById {
   '/star-players': typeof StarPlayersRoute
   '/dashboard/batches': typeof DashboardBatchesRoute
   '/dashboard/fee-plans': typeof DashboardFeePlansRoute
+  '/dashboard/fees': typeof DashboardFeesRoute
   '/dashboard/registrations': typeof DashboardRegistrationsRoute
+  '/dashboard/reports': typeof DashboardReportsRoute
   '/dashboard/site': typeof DashboardSiteRoute
   '/dashboard/students': typeof DashboardStudentsRouteWithChildren
   '/dashboard/': typeof DashboardIndexRoute
@@ -165,7 +183,9 @@ export interface FileRouteTypes {
     | '/star-players'
     | '/dashboard/batches'
     | '/dashboard/fee-plans'
+    | '/dashboard/fees'
     | '/dashboard/registrations'
+    | '/dashboard/reports'
     | '/dashboard/site'
     | '/dashboard/students'
     | '/dashboard/'
@@ -181,7 +201,9 @@ export interface FileRouteTypes {
     | '/star-players'
     | '/dashboard/batches'
     | '/dashboard/fee-plans'
+    | '/dashboard/fees'
     | '/dashboard/registrations'
+    | '/dashboard/reports'
     | '/dashboard/site'
     | '/dashboard/students'
     | '/dashboard'
@@ -198,7 +220,9 @@ export interface FileRouteTypes {
     | '/star-players'
     | '/dashboard/batches'
     | '/dashboard/fee-plans'
+    | '/dashboard/fees'
     | '/dashboard/registrations'
+    | '/dashboard/reports'
     | '/dashboard/site'
     | '/dashboard/students'
     | '/dashboard/'
@@ -295,11 +319,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardSiteRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/reports': {
+      id: '/dashboard/reports'
+      path: '/reports'
+      fullPath: '/dashboard/reports'
+      preLoaderRoute: typeof DashboardReportsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/registrations': {
       id: '/dashboard/registrations'
       path: '/registrations'
       fullPath: '/dashboard/registrations'
       preLoaderRoute: typeof DashboardRegistrationsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/fees': {
+      id: '/dashboard/fees'
+      path: '/fees'
+      fullPath: '/dashboard/fees'
+      preLoaderRoute: typeof DashboardFeesRouteImport
       parentRoute: typeof DashboardRoute
     }
     '/dashboard/fee-plans': {
@@ -340,7 +378,9 @@ const DashboardStudentsRouteWithChildren =
 interface DashboardRouteChildren {
   DashboardBatchesRoute: typeof DashboardBatchesRoute
   DashboardFeePlansRoute: typeof DashboardFeePlansRoute
+  DashboardFeesRoute: typeof DashboardFeesRoute
   DashboardRegistrationsRoute: typeof DashboardRegistrationsRoute
+  DashboardReportsRoute: typeof DashboardReportsRoute
   DashboardSiteRoute: typeof DashboardSiteRoute
   DashboardStudentsRoute: typeof DashboardStudentsRouteWithChildren
   DashboardIndexRoute: typeof DashboardIndexRoute
@@ -349,7 +389,9 @@ interface DashboardRouteChildren {
 const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardBatchesRoute: DashboardBatchesRoute,
   DashboardFeePlansRoute: DashboardFeePlansRoute,
+  DashboardFeesRoute: DashboardFeesRoute,
   DashboardRegistrationsRoute: DashboardRegistrationsRoute,
+  DashboardReportsRoute: DashboardReportsRoute,
   DashboardSiteRoute: DashboardSiteRoute,
   DashboardStudentsRoute: DashboardStudentsRouteWithChildren,
   DashboardIndexRoute: DashboardIndexRoute,

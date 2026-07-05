@@ -15,8 +15,11 @@ import {
   LogOut,
   Menu,
   ExternalLink,
+  IndianRupee,
+  BarChart3,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { getFeatures } from "@/lib/tenant";
 
 type NavItem = {
   to: string;
@@ -24,10 +27,12 @@ type NavItem = {
   icon: React.ComponentType<{ className?: string }>;
 };
 
-const nav: NavItem[] = [
+const nav: (NavItem & { requiresFeature?: "fee_tracking" })[] = [
   { to: "/dashboard", label: "Home", icon: LayoutDashboard },
   { to: "/dashboard/registrations", label: "Registrations", icon: Inbox },
   { to: "/dashboard/students", label: "Students", icon: Users },
+  { to: "/dashboard/fees", label: "Fees", icon: IndianRupee, requiresFeature: "fee_tracking" },
+  { to: "/dashboard/reports", label: "Reports", icon: BarChart3, requiresFeature: "fee_tracking" },
   { to: "/dashboard/batches", label: "Batches", icon: CalendarDays },
   { to: "/dashboard/fee-plans", label: "Fee plans", icon: Wallet },
   { to: "/dashboard/site", label: "Site editor", icon: Globe },
@@ -50,11 +55,14 @@ export function DashboardShell({ children }: { children: ReactNode }) {
     refetchInterval: 30_000,
   });
 
-  const navWithBadges = nav.map((n) =>
-    n.to === "/dashboard/registrations"
-      ? { ...n, badge: newRegCount.data && newRegCount.data > 0 ? newRegCount.data : undefined }
-      : n,
-  );
+  const features = getFeatures(tenant);
+  const navWithBadges = nav
+    .filter((n) => !n.requiresFeature || features[n.requiresFeature] !== false)
+    .map((n) =>
+      n.to === "/dashboard/registrations"
+        ? { ...n, badge: newRegCount.data && newRegCount.data > 0 ? newRegCount.data : undefined }
+        : n,
+    );
 
   return (
     <div className="min-h-screen bg-muted/30 text-foreground">
