@@ -105,9 +105,16 @@ function PlanCard({
   return (
     <div
       className={`relative rounded-2xl border bg-card p-6 transition-all ${
-        popular ? "border-transparent shadow-xl scale-[1.02] ring-2" : "border-border/60 hover:shadow-md"
+        popular ? "border-transparent shadow-xl sm:scale-[1.03]" : "border-border/60 hover:shadow-md"
       }`}
-      style={popular ? { ringColor: "var(--brand)", boxShadow: "0 12px 40px -12px color-mix(in oklab, var(--brand) 40%, transparent)" } as React.CSSProperties : undefined}
+      style={
+        popular
+          ? {
+              outline: "2px solid var(--brand)",
+              boxShadow: "0 12px 40px -12px color-mix(in oklab, var(--brand) 40%, transparent)",
+            }
+          : undefined
+      }
     >
       {popular ? (
         <div
