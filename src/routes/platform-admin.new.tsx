@@ -80,8 +80,11 @@ function Wizard() {
   async function goNext() {
     if (step === 0) {
       if (!biz.name || !biz.slug) return toast.error("Name and slug are required");
-      if (!slugRe.test(biz.slug)) return toast.error("Slug: lowercase letters, digits, hyphens only");
-      if (RESERVED_SLUGS.has(biz.slug)) return toast.error(`"${biz.slug}" is a reserved name — pick another`);
+      if (slugFormatError) return toast.error(slugFormatError);
+      if (slugReservedError) return toast.error(slugReservedError);
+      const { data: dupe } = await supabase.from("tenants").select("id").eq("slug", slugTrimmed).maybeSingle();
+      if (dupe) return toast.error("Slug already in use");
+    }
       const { data: dupe } = await supabase.from("tenants").select("id").eq("slug", biz.slug).maybeSingle();
       if (dupe) return toast.error("Slug already in use");
     }
