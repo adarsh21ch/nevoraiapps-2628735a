@@ -59,14 +59,14 @@ function DashboardHome() {
           </div>
           <h2 className="mt-4 text-lg font-semibold">No {n.students.toLowerCase()} yet</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Add your first {n.students.toLowerCase()} to get started.
+            Add your first {n.student.toLowerCase()} to get started.
           </p>
           <Link
             to="/dashboard/students"
             className="mt-5 inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold text-white shadow-sm"
             style={{ backgroundColor: "var(--brand)" }}
           >
-            <Plus className="size-4" /> Add your first {n.students.toLowerCase()}
+            <Plus className="size-4" /> Add your first {n.student.toLowerCase()}
           </Link>
         </Card>
       ) : (
