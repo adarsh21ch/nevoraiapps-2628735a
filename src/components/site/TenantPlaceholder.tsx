@@ -1,13 +1,28 @@
 import { Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import {
+  DEFAULT_PLATFORM_SETTINGS,
+  fetchPlatformSettings,
+  platformSettingsKey,
+  waHref,
+} from "@/lib/platform-settings";
 
-/** Founder contact — used for the "Chat on WhatsApp" CTA. */
-const FOUNDER_WHATSAPP = "https://wa.me/919999999999?text=Hi%2C%20I%27d%20like%20a%20demo%20of%20Academy%20OS";
+const DEMO_MSG = "Hi, I'd like a demo of Academy OS";
 
 /** Landing shown at the root domain when no tenant matches the URL.
  *  Acts as the platform's own marketing + login entry point. */
 export function TenantPlaceholder() {
+  const { data: settings = DEFAULT_PLATFORM_SETTINGS } = useQuery({
+    queryKey: platformSettingsKey,
+    queryFn: fetchPlatformSettings,
+    staleTime: 60_000,
+  });
+  const whatsappUrl = waHref(settings.contact_whatsapp, DEMO_MSG);
+  const emailUrl = `mailto:${settings.contact_email}?subject=${encodeURIComponent("Demo request — Academy OS")}`;
+
   return (
     <div className="min-h-screen w-full bg-[#050505] text-zinc-100 selection:bg-purple-500/30 font-[Inter,ui-sans-serif,system-ui] overflow-x-hidden">
+
       {/* Ambient background glow */}
       <div className="pointer-events-none fixed inset-x-0 top-0 -z-10 flex justify-center">
         <div className="h-[520px] w-[900px] max-w-full rounded-full bg-purple-600/15 blur-[140px]" />
@@ -41,20 +56,28 @@ export function TenantPlaceholder() {
 
           <div className="mt-2 flex flex-col gap-3 sm:flex-row">
             <a
-              href={FOUNDER_WHATSAPP}
+              href={whatsappUrl}
               target="_blank"
               rel="noreferrer"
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-[#25D366] px-8 py-3.5 font-semibold text-black shadow-lg shadow-emerald-500/20 transition-all hover:scale-105 hover:brightness-110 active:scale-95"
+            >
+              <WhatsAppIcon />
+              WhatsApp {settings.contact_whatsapp}
+            </a>
+            <a
+              href={emailUrl}
               className="rounded-full bg-zinc-100 px-8 py-3.5 font-semibold text-zinc-950 shadow-lg shadow-white/10 transition-all hover:scale-105 hover:bg-white active:scale-95"
             >
-              Get started — 30-min setup
+              Email {settings.contact_email}
             </a>
             <Link
               to="/auth"
               className="rounded-full border border-zinc-800 bg-zinc-900 px-8 py-3.5 font-medium text-zinc-100 transition-all hover:bg-zinc-800"
             >
-              Log in to dashboard
+              Log in
             </Link>
           </div>
+
 
           <div className="flex items-center gap-2 pt-4 text-xs font-medium uppercase tracking-widest text-zinc-500">
             <span className="h-2 w-2 animate-pulse rounded-full bg-red-500" />
@@ -142,15 +165,21 @@ export function TenantPlaceholder() {
             Whether you run a single-court gym or a multi-location academy, we'll set you up with a
             branded portal you own end-to-end.
           </p>
-          <div className="mx-auto flex max-w-xs flex-col gap-4">
+          <div className="mx-auto flex max-w-sm flex-col gap-3">
             <a
-              href={FOUNDER_WHATSAPP}
+              href={whatsappUrl}
               target="_blank"
               rel="noreferrer"
               className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#25D366] px-6 py-4 font-bold text-black transition-all hover:brightness-110"
             >
               <WhatsAppIcon />
-              Chat on WhatsApp
+              Chat on WhatsApp · {settings.contact_whatsapp}
+            </a>
+            <a
+              href={emailUrl}
+              className="flex w-full items-center justify-center gap-2 rounded-2xl border border-zinc-700 bg-zinc-900 px-6 py-4 font-semibold text-zinc-100 transition-all hover:bg-zinc-800"
+            >
+              Email {settings.contact_email}
             </a>
             <Link
               to="/auth"
@@ -159,6 +188,7 @@ export function TenantPlaceholder() {
               Existing owner? Sign in →
             </Link>
           </div>
+
         </section>
 
         <footer className="mt-24 text-[10px] uppercase tracking-widest text-zinc-600">
