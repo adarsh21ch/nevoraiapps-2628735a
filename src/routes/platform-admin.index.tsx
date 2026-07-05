@@ -3,8 +3,9 @@ import { useQuery } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { fetchTenants, pqk } from "@/lib/platform-queries";
-import { Building2, ExternalLink, Plus, TrendingUp, Users, Wallet } from "lucide-react";
+import { Building2, ChevronRight, ExternalLink, Plus, TrendingUp, Users, Wallet } from "lucide-react";
 import { niche } from "@/lib/niche";
 
 export const Route = createFileRoute("/platform-admin/")({
