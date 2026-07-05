@@ -62,13 +62,13 @@ export function TenantPlaceholder() {
               className="inline-flex items-center justify-center gap-2 rounded-full bg-[#25D366] px-8 py-3.5 font-semibold text-black shadow-lg shadow-emerald-500/20 transition-all hover:scale-105 hover:brightness-110 active:scale-95"
             >
               <WhatsAppIcon />
-              WhatsApp {settings.contact_whatsapp}
+              Chat on WhatsApp
             </a>
             <a
               href={emailUrl}
               className="rounded-full bg-zinc-100 px-8 py-3.5 font-semibold text-zinc-950 shadow-lg shadow-white/10 transition-all hover:scale-105 hover:bg-white active:scale-95"
             >
-              Email {settings.contact_email}
+              Email us
             </a>
             <Link
               to="/auth"
@@ -173,13 +173,13 @@ export function TenantPlaceholder() {
               className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#25D366] px-6 py-4 font-bold text-black transition-all hover:brightness-110"
             >
               <WhatsAppIcon />
-              Chat on WhatsApp · {settings.contact_whatsapp}
+              Connect on WhatsApp
             </a>
             <a
               href={emailUrl}
               className="flex w-full items-center justify-center gap-2 rounded-2xl border border-zinc-700 bg-zinc-900 px-6 py-4 font-semibold text-zinc-100 transition-all hover:bg-zinc-800"
             >
-              Email {settings.contact_email}
+              Email us instead
             </a>
             <Link
               to="/auth"
