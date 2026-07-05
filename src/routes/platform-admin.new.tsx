@@ -265,7 +265,12 @@ function Wizard() {
             <SectionHead title="Business details" subtitle="Basics about the academy or gym." />
             <div className="grid gap-3 md:grid-cols-2">
               <Field label="Business name *" value={biz.name} onChange={(v) => setBiz({ ...biz, name: v })} />
-              <Field label="URL slug *" value={biz.slug} onChange={(v) => setBiz({ ...biz, slug: v.toLowerCase() })} placeholder="e.g. sunrise-cricket" />
+              <div className="space-y-1">
+                <Field label="URL slug *" value={biz.slug} onChange={(v) => setBiz({ ...biz, slug: v.toLowerCase() })} placeholder="e.g. sunrise-cricket" />
+                {(slugReservedError || slugFormatError) && (
+                  <p className="text-xs text-rose-400">{slugReservedError || slugFormatError}</p>
+                )}
+              </div>
               <div className="space-y-1.5">
                 <Label className="text-neutral-300">Niche *</Label>
                 <Select value={biz.niche} onValueChange={(v) => setBiz({ ...biz, niche: v as NicheKey })}>
