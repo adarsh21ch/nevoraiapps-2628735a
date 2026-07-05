@@ -8,8 +8,6 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
-import { Toaster } from "@/components/ui/sonner";
-import { TenantProvider } from "@/lib/tenant-context";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -80,28 +78,23 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "Academy OS" },
-      {
-        name: "description",
-        content:
-          "Academy OS — the white-label operating system for sports academies, gyms and coaching centres.",
-      },
+      { name: "description", content: "Academy OS — the white-label operating system for sports academies, gyms and coaching centres." },
+      { name: "author", content: "Lovable" },
       { property: "og:title", content: "Academy OS" },
-      {
-        property: "og:description",
-        content:
-          "Academy OS — the white-label operating system for sports academies, gyms and coaching centres.",
-      },
+      { property: "og:description", content: "Academy OS — the white-label operating system for sports academies, gyms and coaching centres." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:site", content: "@Lovable" },
       { name: "twitter:title", content: "Academy OS" },
-      { name: "description", content: "Academy OS — the white-label operating system for sports academies, gyms and coaching centres." },
-      { property: "og:description", content: "Academy OS — the white-label operating system for sports academies, gyms and coaching centres." },
       { name: "twitter:description", content: "Academy OS — the white-label operating system for sports academies, gyms and coaching centres." },
       { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/a79bd1d0-a426-4630-9f49-ec348bbfce86/id-preview-e4e25ca1--1720a839-1551-46d2-be56-cea0a1c13adf.lovable.app-1783239834008.png" },
       { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/a79bd1d0-a426-4630-9f49-ec348bbfce86/id-preview-e4e25ca1--1720a839-1551-46d2-be56-cea0a1c13adf.lovable.app-1783239834008.png" },
     ],
     links: [
-      { rel: "stylesheet", href: appCss },
+      {
+        rel: "stylesheet",
+        href: appCss,
+      },
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
     ],
   }),
@@ -130,11 +123,8 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <TenantProvider>
-        {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-        <Outlet />
-        <Toaster richColors position="top-center" />
-      </TenantProvider>
+      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+      <Outlet />
     </QueryClientProvider>
   );
 }
