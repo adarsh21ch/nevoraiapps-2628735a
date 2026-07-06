@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useMemo, type ReactNode } from "r
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { resolveTenantHint, type Tenant } from "./tenant";
+import { pickPreset } from "./theme-presets";
 
 type TenantState =
   | { status: "loading"; tenant: null }
@@ -59,8 +60,13 @@ export function TenantProvider({ children }: { children: ReactNode }) {
     const root = document.documentElement;
     if (state.tenant) {
       const t = state.tenant;
-      root.style.setProperty("--brand", t.primary_color);
-      root.style.setProperty("--brand-ink", t.secondary_color);
+      // Auto-pick a sport-appropriate palette from niche + slug.
+      // Existing per-tenant primary_color still wins so owners keep control.
+      const preset = pickPreset(t.niche, t.slug);
+      root.style.setProperty("--brand", t.primary_color || preset.primary);
+      root.style.setProperty("--brand-ink", t.secondary_color || preset.ink);
+      root.style.setProperty("--brand-accent", preset.accent);
+      root.style.setProperty("--brand-surface", preset.surface);
       document.title = t.tagline ? `${t.name} — ${t.tagline}` : t.name;
 
       // Favicon
@@ -96,6 +102,8 @@ export function TenantProvider({ children }: { children: ReactNode }) {
     } else {
       root.style.removeProperty("--brand");
       root.style.removeProperty("--brand-ink");
+      root.style.removeProperty("--brand-accent");
+      root.style.removeProperty("--brand-surface");
     }
   }, [state.tenant]);
 
