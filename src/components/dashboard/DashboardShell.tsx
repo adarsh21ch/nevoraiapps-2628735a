@@ -18,6 +18,8 @@ import {
   IndianRupee,
   BarChart3,
   MessageSquareText,
+  ClipboardCheck,
+  BellRing,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getFeatures } from "@/lib/tenant";
