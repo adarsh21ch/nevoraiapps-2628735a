@@ -216,6 +216,8 @@ function MoreLinks() {
   return (
     <div className="grid grid-cols-3 gap-2 p-2">
       {[
+        { to: "/dashboard/attendance", label: "Attendance", icon: ClipboardCheck },
+        { to: "/dashboard/reminders", label: "Reminders", icon: BellRing },
         { to: "/dashboard/batches", label: "Batches", icon: CalendarDays },
         { to: "/dashboard/fee-plans", label: "Fee plans", icon: Wallet },
         { to: "/dashboard/reports", label: "Reports", icon: BarChart3 },
