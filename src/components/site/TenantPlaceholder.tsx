@@ -1,5 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { motion, useMotionValue, useSpring, useTransform, useScroll } from "framer-motion";
+import { useEffect, useRef } from "react";
 import {
   DEFAULT_PLATFORM_SETTINGS,
   fetchPlatformSettings,
@@ -9,14 +11,8 @@ import {
 
 const DEMO_MSG = "Hi, I'd like a demo of Academy OS";
 
-// Stadium Night palette
-const BG = "#0a0f0a";
-const SURFACE = "#141d16";
-const LIME = "#c6ff4a";
-const CHALK = "#f5f5f0";
-
-/** Landing shown at the root domain when no tenant matches the URL.
- *  Stadium Night direction: near-black turf, chalk lines, single lime accent. */
+/** Kinetic Cyber-Sport landing.
+ *  Minimal copy, oversized display type, real motion. */
 export function TenantPlaceholder() {
   const { data: settings = DEFAULT_PLATFORM_SETTINGS } = useQuery({
     queryKey: platformSettingsKey,
@@ -28,294 +24,640 @@ export function TenantPlaceholder() {
 
   return (
     <div
-      className="min-h-screen w-full overflow-x-hidden font-[Inter,ui-sans-serif,system-ui] selection:bg-[color:var(--lime)]/40 selection:text-black"
-      style={{
-        background: BG,
-        color: CHALK,
-        // expose palette as CSS vars for arbitrary values
-        // @ts-expect-error CSS custom props
-        "--lime": LIME,
-        "--surface": SURFACE,
-      }}
+      className="min-h-screen w-full overflow-x-hidden bg-[#0a0a0a] text-white antialiased selection:bg-lime-400 selection:text-black"
+      style={{ fontFamily: "Inter, ui-sans-serif, system-ui" }}
     >
-      {/* Floodlight glow, top-left and top-right */}
-      <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+      {/* Ambient background */}
+      <div className="pointer-events-none fixed inset-0 -z-10">
+        <div className="absolute -top-40 right-0 h-[600px] w-[600px] rounded-full bg-lime-500/10 blur-[140px]" />
+        <div className="absolute top-1/3 -left-40 h-[500px] w-[500px] rounded-full bg-blue-500/10 blur-[140px]" />
         <div
-          className="absolute -top-40 left-1/2 h-[600px] w-[900px] -translate-x-1/2 rounded-full opacity-40 blur-[140px]"
-          style={{ background: `radial-gradient(closest-side, ${LIME}22, transparent 70%)` }}
-        />
-        <div
-          className="absolute inset-x-0 top-0 h-[70vh] opacity-[0.06]"
+          className="absolute inset-0 opacity-[0.04]"
           style={{
             backgroundImage:
-              "linear-gradient(to right, #ffffff 1px, transparent 1px), linear-gradient(to bottom, #ffffff 1px, transparent 1px)",
-            backgroundSize: "80px 80px",
-            maskImage: "linear-gradient(to bottom, black, transparent)",
+              "linear-gradient(to right,#fff 1px,transparent 1px),linear-gradient(to bottom,#fff 1px,transparent 1px)",
+            backgroundSize: "60px 60px",
+            maskImage: "radial-gradient(ellipse at center, black 40%, transparent 80%)",
           }}
         />
       </div>
 
-      {/* Top nav bar */}
-      <nav className="sticky top-0 z-20 border-b border-white/5 backdrop-blur-md" style={{ background: `${BG}cc` }}>
-        <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-4">
-          <div className="flex items-center gap-2.5">
-            <div
-              className="grid h-8 w-8 place-items-center rounded-md text-[13px] font-bold"
-              style={{ background: LIME, color: "#0a0f0a" }}
-            >
-              A
-            </div>
-            <span className="font-[Bricolage_Grotesque,serif] text-sm font-semibold tracking-tight">Academy OS</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Link
-              to="/auth"
-              className="rounded-full border border-white/10 px-4 py-1.5 text-xs font-medium text-white/80 transition hover:border-white/25 hover:text-white"
-            >
-              Log in
-            </Link>
-            <a
-              href={whatsappUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="rounded-full px-4 py-1.5 text-xs font-semibold transition hover:brightness-110"
-              style={{ background: LIME, color: "#0a0f0a" }}
-            >
-              Book a demo
-            </a>
-          </div>
-        </div>
-      </nav>
-
-      <div className="mx-auto flex w-full max-w-6xl flex-col px-4 py-16 md:py-24">
-        {/* Hero */}
-        <header className="animate-fade-in">
-          <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/50">
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full" style={{ background: LIME }} />
-            Matchday · Season 26
-          </div>
-
-          <h1 className="mt-6 max-w-4xl font-[Bricolage_Grotesque,serif] text-6xl font-bold leading-[0.95] tracking-tight text-white md:text-8xl">
-            Run your academy
-            <br />
-            like a <span className="relative inline-block">
-              <span className="relative z-10">pro club</span>
-              <span
-                aria-hidden
-                className="absolute -bottom-1 left-0 right-0 h-3 rounded-sm"
-                style={{ background: LIME }}
-              />
-            </span>.
-          </h1>
-
-          <p className="mt-8 max-w-2xl text-lg leading-relaxed text-white/60 md:text-xl">
-            One dashboard for registrations, fees, batches, attendance and WhatsApp reminders.
-            Built for cricket academies, gyms and coaching centres who want to look sharp and get paid on time.
-          </p>
-
-          <div className="mt-10 flex flex-col gap-3 sm:flex-row">
-            <a
-              href={whatsappUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="group inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 font-semibold transition hover:brightness-110 active:scale-[0.98]"
-              style={{ background: LIME, color: "#0a0f0a" }}
-            >
-              <WhatsAppIcon />
-              Chat on WhatsApp
-              <span className="transition group-hover:translate-x-0.5">→</span>
-            </a>
-            <a
-              href={emailUrl}
-              className="inline-flex items-center justify-center gap-2 rounded-full border border-white/15 bg-white/5 px-7 py-3.5 font-semibold text-white transition hover:border-white/30 hover:bg-white/10"
-            >
-              Email the team
-            </a>
-          </div>
-
-          {/* Scoreboard-style stat strip */}
-          <dl className="mt-14 grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] md:grid-cols-4">
-            {STATS.map((s) => (
-              <div key={s.label} className="p-6" style={{ background: SURFACE }}>
-                <dt className="text-[11px] font-semibold uppercase tracking-widest text-white/40">{s.label}</dt>
-                <dd className="mt-2 font-[Bricolage_Grotesque,serif] text-3xl font-bold" style={{ color: LIME }}>
-                  {s.value}
-                </dd>
-                <p className="mt-1 text-xs text-white/50">{s.hint}</p>
-              </div>
-            ))}
-          </dl>
-        </header>
-
-        {/* Feature grid */}
-        <section className="mt-28">
-          <SectionHeader eyebrow="What's in the kitbag" title="Everything an owner needs. Nothing you don't." />
-          <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {FEATURES.map((f, i) => (
-              <div
-                key={f.title}
-                className="group relative overflow-hidden rounded-2xl border border-white/10 p-6 transition hover:-translate-y-0.5 hover:border-white/25"
-                style={{ background: SURFACE, animationDelay: `${i * 40}ms` }}
-              >
-                <div
-                  className="absolute -right-8 -top-8 h-24 w-24 rounded-full opacity-0 blur-2xl transition-opacity group-hover:opacity-30"
-                  style={{ background: LIME }}
-                />
-                <div
-                  className="mb-4 grid h-10 w-10 place-items-center rounded-lg font-[Bricolage_Grotesque,serif] text-lg font-bold text-black"
-                  style={{ background: LIME }}
-                >
-                  {String(i + 1).padStart(2, "0")}
-                </div>
-                <h3 className="font-[Bricolage_Grotesque,serif] text-lg font-semibold text-white">{f.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-white/60">{f.body}</p>
-              </div>
-
-            ))}
-          </div>
-        </section>
-
-        {/* Segmented audience chips */}
-        <section className="mt-28">
-          <SectionHeader eyebrow="Built for" title="Any coaching business that runs on batches and monthly fees." />
-          <div className="mt-8 flex flex-wrap gap-2.5">
-            {AUDIENCES.map((a) => (
-              <div
-                key={a.title}
-                className="group inline-flex items-center gap-3 rounded-full border border-white/10 px-4 py-2.5 transition hover:border-[color:var(--lime)]/50"
-                style={{ background: SURFACE }}
-              >
-                <span
-                  className="grid h-6 w-6 place-items-center rounded-full text-[11px] font-bold text-black"
-                  style={{ background: LIME }}
-                >
-                  {a.tag}
-                </span>
-                <span className="text-sm font-medium text-white">{a.title}</span>
-                <span className="hidden text-xs text-white/50 sm:inline">— {a.hint}</span>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* How it works — three lanes */}
-        <section className="mt-28">
-          <SectionHeader eyebrow="How it works" title="From cold WhatsApp to first collected fee in 48 hours." />
-          <ol className="mt-10 grid grid-cols-1 gap-px overflow-hidden rounded-2xl border border-white/10 md:grid-cols-3">
-            {STEPS.map((s, i) => (
-              <li key={s.title} className="relative p-8" style={{ background: SURFACE }}>
-                <div className="flex items-baseline gap-3">
-                  <span className="font-[Bricolage_Grotesque,serif] text-5xl font-bold" style={{ color: LIME }}>
-                    0{i + 1}
-                  </span>
-                  <span className="text-[11px] font-semibold uppercase tracking-widest text-white/40">Step</span>
-                </div>
-                <h3 className="mt-4 font-[Bricolage_Grotesque,serif] text-xl font-semibold text-white">{s.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-white/60">{s.body}</p>
-              </li>
-            ))}
-          </ol>
-        </section>
-
-        {/* Pricing strip */}
-        <section className="mt-28 flex flex-col items-start justify-between gap-6 rounded-2xl border border-white/10 p-8 md:flex-row md:items-center" style={{ background: SURFACE }}>
-          <div>
-            <div className="text-[11px] font-semibold uppercase tracking-widest text-white/40">Pricing</div>
-            <div className="mt-2 font-[Bricolage_Grotesque,serif] text-3xl font-bold text-white">
-              Starts at <span style={{ color: LIME }}>₹2,000</span>
-              <span className="text-white/50">/mo</span>
-            </div>
-            <p className="mt-1 text-sm text-white/60">Zero setup. No card. Cancel anytime.</p>
-          </div>
-          <a
-            href={whatsappUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center gap-2 rounded-full px-6 py-3 font-semibold transition hover:brightness-110"
-            style={{ background: LIME, color: "#0a0f0a" }}
-          >
-            <WhatsAppIcon /> See a live demo
-          </a>
-        </section>
-
-        {/* Coming AI teaser */}
-        <section className="mt-28 rounded-2xl border border-white/10 p-8 md:p-12" style={{ background: `linear-gradient(180deg, ${SURFACE}, ${BG})` }}>
-          <div className="flex flex-wrap items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.22em]" style={{ color: LIME }}>
-            <span className="h-1.5 w-1.5 rounded-full" style={{ background: LIME }} />
-            Coming soon · AI assistant
-          </div>
-          <h2 className="mt-4 max-w-3xl font-[Bricolage_Grotesque,serif] text-3xl font-bold text-white md:text-4xl">
-            Ask your academy anything.
-            <span className="text-white/60"> "Who hasn't paid this month? Draft reminders. Show absentees this week."</span>
-          </h2>
-          <p className="mt-4 max-w-2xl text-white/60">
-            The AI agent that replaces the extra admin hire. Same subscription. Rolling out to every owner.
-          </p>
-        </section>
-
-        {/* Footer CTA */}
-        <section className="mt-20 border-t border-white/10 pt-10 text-center">
-          <h2 className="font-[Bricolage_Grotesque,serif] text-3xl font-bold text-white md:text-4xl">
-            Ready to run a tighter academy?
-          </h2>
-          <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <a
-              href={whatsappUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-2 rounded-full px-7 py-3.5 font-semibold transition hover:brightness-110"
-              style={{ background: LIME, color: "#0a0f0a" }}
-            >
-              <WhatsAppIcon /> Chat on WhatsApp
-            </a>
-            <a href={emailUrl} className="text-sm text-white/50 underline underline-offset-4 hover:text-white">
-              or drop us an email
-            </a>
-          </div>
-          <div className="mt-10 flex items-center justify-center gap-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/30">
-            <span className="h-1.5 w-1.5 rounded-full bg-white/30" />
-            No academy configured for this URL
-          </div>
-        </section>
-
-        <footer className="mt-16 pb-4 text-center text-[10px] uppercase tracking-widest text-white/30">
-          Academy OS · Built for performance
-        </footer>
-      </div>
+      <Nav whatsappUrl={whatsappUrl} />
+      <Hero whatsappUrl={whatsappUrl} emailUrl={emailUrl} />
+      <Marquee />
+      <Bento />
+      <BuiltFor />
+      <ClosingCTA whatsappUrl={whatsappUrl} emailUrl={emailUrl} />
+      <Footer />
     </div>
   );
 }
 
-/* ─── Content ─────────────────────────────────────────── */
+/* ─────────────────────────── Nav ─────────────────────────── */
 
-const STATS = [
-  { label: "Setup time", value: "48h", hint: "From signup to live portal" },
-  { label: "Owner time saved", value: "12h/wk", hint: "Vs pen-and-paper" },
-  { label: "Fees collected", value: "94%", hint: "Median on-time rate" },
-  { label: "Monthly cost", value: "₹2K+", hint: "Per academy" },
-];
+function Nav({ whatsappUrl }: { whatsappUrl: string }) {
+  return (
+    <nav className="sticky top-0 z-30 border-b border-white/5 bg-[#0a0a0a]/70 backdrop-blur-md">
+      <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
+        <div className="flex items-center gap-2.5">
+          <div className="grid h-8 w-8 place-items-center rounded bg-lime-400 text-[13px] font-black text-black">
+            A
+          </div>
+          <span
+            className="text-lg font-black uppercase tracking-tight"
+            style={{ fontFamily: "'Bebas Neue', sans-serif", letterSpacing: "0.02em" }}
+          >
+            Academy<span className="text-lime-400">OS</span>
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          <Link
+            to="/auth"
+            className="rounded-none border border-white/10 px-4 py-1.5 text-[11px] font-bold uppercase tracking-widest text-white/80 transition hover:border-white hover:text-white"
+          >
+            Log in
+          </Link>
+          <a
+            href={whatsappUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="rounded-none bg-lime-400 px-4 py-1.5 text-[11px] font-bold uppercase tracking-widest text-black transition hover:bg-white"
+          >
+            Book demo
+          </a>
+        </div>
+      </div>
+    </nav>
+  );
+}
 
-const FEATURES = [
-  { title: "Online registration", body: "Branded intake forms, batch + fee-plan pickers, UPI-ready payment flow, PDF receipts." },
-  { title: "Fee management", body: "Monthly cycles, overdue chips, UPI verification, one-tap WhatsApp reminders." },
-  { title: "Batches & rosters", body: "Multi-batch, multi-centre scheduling with coach-friendly attendance." },
-  { title: "Lead inbox", body: "Landing-page enquiries land in your dashboard. Reply on WhatsApp in one tap." },
-  { title: "Owner site", body: "A polished branded microsite per academy — subdomain or custom domain. Editable copy." },
-  { title: "Reports", body: "Registrations, revenue, retention. Export CSV whenever you need it." },
-];
+/* ─────────────────────────── Hero ─────────────────────────── */
 
-const AUDIENCES = [
-  { tag: "🏏", title: "Cricket academies", hint: "Nets, coaching, tournaments" },
-  { tag: "⚽", title: "Football & sports", hint: "Any batch-based sport" },
-  { tag: "💪", title: "Gyms & fitness studios", hint: "Members, plans, trainers" },
-  { tag: "📚", title: "Coaching centres", hint: "Tuition, groups, tutors" },
-];
+function Hero({ whatsappUrl, emailUrl }: { whatsappUrl: string; emailUrl: string }) {
+  return (
+    <section className="relative mx-auto grid w-full max-w-6xl grid-cols-1 items-center gap-12 px-4 py-16 sm:px-6 sm:py-24 lg:grid-cols-12 lg:gap-8">
+      {/* Value prop */}
+      <div className="z-10 space-y-8 lg:col-span-7">
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          className="inline-flex items-center gap-2 rounded-full border border-lime-500/30 bg-lime-500/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.25em] text-lime-400"
+        >
+          <PulseDot />
+          Now AI-Powered
+        </motion.div>
 
-const STEPS = [
-  { title: "Share your details", body: "Name, colours, fee plans and your UPI ID. We set up your branded portal from that." },
-  { title: "Go live", body: "Custom subdomain, logo and site content ship in a day. You get an owner login and a walkthrough." },
-  { title: "Collect fees", body: "Send the registration link to parents. Track everything from one dashboard on your phone." },
-];
+        <motion.h1
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+          className="text-7xl leading-[0.85] tracking-tighter sm:text-[9rem]"
+          style={{ fontFamily: "'Bebas Neue', sans-serif" }}
+        >
+          Academy <span className="text-lime-400">OS</span>
+        </motion.h1>
+
+        <motion.p
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.15 }}
+          className="max-w-xl text-xl font-medium leading-relaxed text-zinc-400 sm:text-2xl"
+        >
+          The operating system for coaching academies and gyms. Automate{" "}
+          <span className="text-white">fees, attendance and admin</span> with your own AI assistant.
+        </motion.p>
+
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.25 }}
+          className="flex flex-wrap gap-4"
+        >
+          <a
+            href={whatsappUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="group relative inline-flex items-center gap-2 rounded-none bg-lime-400 px-8 py-4 text-sm font-bold uppercase tracking-wider text-black transition-all duration-300 hover:-translate-y-1 hover:bg-white"
+          >
+            <WhatsAppIcon />
+            Chat on WhatsApp
+            <span
+              aria-hidden
+              className="absolute -bottom-1 -right-1 h-full w-full border-b-2 border-r-2 border-lime-400 transition-colors group-hover:border-white"
+            />
+          </a>
+          <a
+            href={emailUrl}
+            className="inline-flex items-center gap-2 rounded-none border border-zinc-700 px-8 py-4 text-sm font-bold uppercase tracking-wider transition hover:bg-zinc-900"
+          >
+            Email the team →
+          </a>
+        </motion.div>
+      </div>
+
+      {/* Kinetic feature grid */}
+      <KineticGrid />
+    </section>
+  );
+}
+
+function KineticGrid() {
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const mx = useMotionValue(0);
+  const my = useMotionValue(0);
+  const rx = useSpring(useTransform(my, [-1, 1], [6, -6]), { stiffness: 120, damping: 15 });
+  const ry = useSpring(useTransform(mx, [-1, 1], [-6, 6]), { stiffness: 120, damping: 15 });
+
+  useEffect(() => {
+    const el = wrapRef.current;
+    if (!el) return;
+    const onMove = (e: MouseEvent) => {
+      const r = el.getBoundingClientRect();
+      mx.set(((e.clientX - r.left) / r.width) * 2 - 1);
+      my.set(((e.clientY - r.top) / r.height) * 2 - 1);
+    };
+    const onLeave = () => {
+      mx.set(0);
+      my.set(0);
+    };
+    el.addEventListener("mousemove", onMove);
+    el.addEventListener("mouseleave", onLeave);
+    return () => {
+      el.removeEventListener("mousemove", onMove);
+      el.removeEventListener("mouseleave", onLeave);
+    };
+  }, [mx, my]);
+
+  return (
+    <div ref={wrapRef} className="relative lg:col-span-5" style={{ perspective: 1200 }}>
+      <motion.div
+        className="relative grid grid-cols-2 gap-4"
+        style={{ rotateX: rx, rotateY: ry, transformStyle: "preserve-3d", rotate: 3 }}
+      >
+        <Tile delay={0.05} className="translate-y-8 hover:border-lime-500/60" tone="lime">
+          <IconBubble tone="green">
+            <WhatsAppIcon />
+          </IconBubble>
+          <TileLabel title="WhatsApp Leads" body="One-tap replies, auto reminders." />
+        </Tile>
+
+        <Tile delay={0.15} className="hover:border-blue-500/60" tone="blue">
+          <IconBubble tone="blue">
+            <BoltIcon />
+          </IconBubble>
+          <TileLabel title="AI Assistant" body="Replaces your front-desk admin." />
+        </Tile>
+
+        <Tile delay={0.25} className="translate-y-8 hover:border-white" tone="white">
+          <IconBubble tone="zinc">
+            <UsersIcon />
+          </IconBubble>
+          <TileLabel title="Fees & Batches" body="UPI receipts. Overdue tracked." />
+        </Tile>
+
+        <Tile delay={0.35} tone="lime" solid>
+          <div
+            className="text-5xl font-black text-black"
+            style={{ fontFamily: "'Bebas Neue', sans-serif" }}
+          >
+            100%
+          </div>
+          <TileLabel title="Paperless" body="Run it all from your phone." dark />
+        </Tile>
+      </motion.div>
+
+      <div className="absolute -top-20 -right-20 -z-10 h-80 w-80 rounded-full bg-lime-500/10 blur-[100px]" />
+      <div className="absolute -bottom-20 -left-20 -z-10 h-80 w-80 rounded-full bg-blue-500/10 blur-[100px]" />
+    </div>
+  );
+}
+
+function Tile({
+  children,
+  className = "",
+  delay = 0,
+  solid = false,
+  tone,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  delay?: number;
+  solid?: boolean;
+  tone: "lime" | "blue" | "white";
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 24, rotateX: -8 }}
+      whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
+      viewport={{ once: true, margin: "-40px" }}
+      transition={{ duration: 0.6, delay, ease: [0.22, 1, 0.36, 1] }}
+      className={`group flex aspect-square flex-col justify-between border p-6 transition-colors ${
+        solid ? "bg-lime-400 border-lime-400" : "bg-zinc-900 border-zinc-800"
+      } ${className}`}
+      style={{ transform: "translateZ(0)" }}
+      data-tone={tone}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+function IconBubble({
+  tone,
+  children,
+}: {
+  tone: "green" | "blue" | "zinc";
+  children: React.ReactNode;
+}) {
+  const map = {
+    green: "bg-green-500/20 text-green-400",
+    blue: "bg-blue-500/20 text-blue-400",
+    zinc: "bg-zinc-800 text-zinc-400",
+  } as const;
+  return <div className={`grid h-10 w-10 place-items-center rounded ${map[tone]}`}>{children}</div>;
+}
+
+function TileLabel({ title, body, dark = false }: { title: string; body: string; dark?: boolean }) {
+  return (
+    <div>
+      <h3
+        className={`text-lg font-bold uppercase leading-tight ${dark ? "text-black" : "text-white"}`}
+        style={{ fontFamily: "'Bebas Neue', sans-serif", letterSpacing: "0.01em" }}
+      >
+        {title}
+      </h3>
+      <p className={`mt-1 text-xs ${dark ? "font-bold text-black/70" : "text-zinc-500"}`}>{body}</p>
+    </div>
+  );
+}
+
+/* ─────────────────────────── Marquee ─────────────────────────── */
+
+function Marquee() {
+  const items = [
+    "REGISTRATIONS",
+    "FEES",
+    "BATCHES",
+    "ATTENDANCE",
+    "WHATSAPP",
+    "AI ASSISTANT",
+    "REPORTS",
+    "OWNER SITE",
+  ];
+  const row = [...items, ...items, ...items];
+  return (
+    <div className="relative border-y border-white/10 bg-black py-6">
+      <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-24 bg-gradient-to-r from-black to-transparent" />
+      <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-24 bg-gradient-to-l from-black to-transparent" />
+      <motion.div
+        className="flex gap-12 whitespace-nowrap"
+        animate={{ x: ["0%", "-33.333%"] }}
+        transition={{ repeat: Infinity, duration: 30, ease: "linear" }}
+      >
+        {row.map((t, i) => (
+          <span
+            key={i}
+            className="text-3xl font-black uppercase tracking-tight text-white/30 md:text-5xl"
+            style={{ fontFamily: "'Bebas Neue', sans-serif" }}
+          >
+            {t} <span className="text-lime-400">◦</span>
+          </span>
+        ))}
+      </motion.div>
+    </div>
+  );
+}
+
+/* ─────────────────────────── Bento ─────────────────────────── */
+
+function Bento() {
+  return (
+    <section className="mx-auto w-full max-w-6xl px-4 py-24 sm:px-6">
+      <SectionHead eyebrow="What's inside" title="ONE APP. THE WHOLE ACADEMY." />
+      <div className="mt-12 grid grid-cols-1 gap-4 md:grid-cols-6 md:grid-rows-2">
+        {/* Live WhatsApp card */}
+        <BentoCard className="md:col-span-3 md:row-span-2" accent="lime">
+          <div className="flex items-center justify-between">
+            <BentoKicker>Lead inbox</BentoKicker>
+            <PulseDot />
+          </div>
+          <BentoTitle>Every enquiry lands on WhatsApp.</BentoTitle>
+          <div className="mt-6 space-y-3">
+            <Bubble
+              side="in"
+              text="Hi, want to join morning cricket batch. — Aarav"
+              delay={0.1}
+            />
+            <Bubble side="out" text="Welcome! Trial slot booked for Sat 7 AM." delay={0.4} />
+            <TypingBubble delay={0.8} />
+          </div>
+        </BentoCard>
+
+        {/* Fees */}
+        <BentoCard className="md:col-span-3" accent="white">
+          <BentoKicker>Fees</BentoKicker>
+          <BentoTitle>Overdue chased on autopilot.</BentoTitle>
+          <div className="mt-4 flex items-end gap-4">
+            <div>
+              <div
+                className="text-5xl font-black text-lime-400"
+                style={{ fontFamily: "'Bebas Neue', sans-serif" }}
+              >
+                94%
+              </div>
+              <div className="text-[10px] uppercase tracking-widest text-zinc-500">
+                On-time collection
+              </div>
+            </div>
+            <div className="flex flex-1 items-end gap-1">
+              {[3, 5, 4, 7, 6, 8, 9, 7, 10, 8].map((h, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ height: 0 }}
+                  whileInView={{ height: `${h * 6}px` }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.05, duration: 0.5 }}
+                  className="w-full bg-lime-400/70"
+                />
+              ))}
+            </div>
+          </div>
+        </BentoCard>
+
+        {/* Attendance */}
+        <BentoCard className="md:col-span-2" accent="blue">
+          <BentoKicker>Attendance</BentoKicker>
+          <BentoTitle>Tap-cycle mark.</BentoTitle>
+          <div className="mt-4 grid grid-cols-5 gap-1.5">
+            {Array.from({ length: 20 }).map((_, i) => {
+              const state = i % 7 === 0 ? "absent" : i % 5 === 0 ? "late" : "present";
+              const cls =
+                state === "present"
+                  ? "bg-lime-400"
+                  : state === "late"
+                  ? "bg-yellow-400"
+                  : "bg-red-500/70";
+              return (
+                <motion.div
+                  key={i}
+                  initial={{ scale: 0, opacity: 0 }}
+                  whileInView={{ scale: 1, opacity: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.02 }}
+                  className={`aspect-square rounded-sm ${cls}`}
+                />
+              );
+            })}
+          </div>
+        </BentoCard>
+
+        {/* AI */}
+        <BentoCard className="md:col-span-1" accent="lime">
+          <BentoKicker>AI</BentoKicker>
+          <div
+            className="mt-2 text-6xl font-black leading-none text-lime-400"
+            style={{ fontFamily: "'Bebas Neue', sans-serif" }}
+          >
+            /ai
+          </div>
+          <div className="mt-2 text-xs text-zinc-500">Ask your academy anything.</div>
+        </BentoCard>
+      </div>
+    </section>
+  );
+}
+
+function BentoCard({
+  children,
+  className = "",
+  accent,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  accent: "lime" | "blue" | "white";
+}) {
+  const hover =
+    accent === "lime"
+      ? "hover:border-lime-500/60"
+      : accent === "blue"
+      ? "hover:border-blue-500/60"
+      : "hover:border-white/40";
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-60px" }}
+      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+      className={`relative flex flex-col overflow-hidden border border-zinc-800 bg-zinc-900 p-6 transition-colors ${hover} ${className}`}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+function BentoKicker({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="text-[10px] font-bold uppercase tracking-[0.25em] text-zinc-500">{children}</div>
+  );
+}
+function BentoTitle({ children }: { children: React.ReactNode }) {
+  return (
+    <h3
+      className="mt-2 text-2xl font-bold uppercase leading-tight text-white"
+      style={{ fontFamily: "'Bebas Neue', sans-serif", letterSpacing: "0.01em" }}
+    >
+      {children}
+    </h3>
+  );
+}
+
+function Bubble({ side, text, delay }: { side: "in" | "out"; text: string; delay: number }) {
+  const isOut = side === "out";
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8, scale: 0.96 }}
+      whileInView={{ opacity: 1, y: 0, scale: 1 }}
+      viewport={{ once: true }}
+      transition={{ delay, duration: 0.4 }}
+      className={`flex ${isOut ? "justify-end" : "justify-start"}`}
+    >
+      <div
+        className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm ${
+          isOut
+            ? "rounded-br-sm bg-lime-400 text-black"
+            : "rounded-bl-sm bg-zinc-800 text-white"
+        }`}
+      >
+        {text}
+      </div>
+    </motion.div>
+  );
+}
+function TypingBubble({ delay }: { delay: number }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      whileInView={{ opacity: 1 }}
+      viewport={{ once: true }}
+      transition={{ delay }}
+      className="flex justify-start"
+    >
+      <div className="flex items-center gap-1.5 rounded-2xl rounded-bl-sm bg-zinc-800 px-4 py-3">
+        {[0, 1, 2].map((i) => (
+          <motion.span
+            key={i}
+            className="h-1.5 w-1.5 rounded-full bg-white/70"
+            animate={{ y: [0, -3, 0], opacity: [0.4, 1, 0.4] }}
+            transition={{ repeat: Infinity, duration: 1, delay: i * 0.15 }}
+          />
+        ))}
+      </div>
+    </motion.div>
+  );
+}
+
+/* ─────────────────────────── Built for ─────────────────────────── */
+
+function BuiltFor() {
+  const items = [
+    { tag: "01", title: "Cricket Academies" },
+    { tag: "02", title: "Football & Sports" },
+    { tag: "03", title: "Gyms & Fitness" },
+    { tag: "04", title: "Coaching Centres" },
+  ];
+  return (
+    <section className="mx-auto w-full max-w-6xl px-4 py-24 sm:px-6">
+      <SectionHead eyebrow="Built for" title="ANY BUSINESS RUN ON BATCHES." />
+      <div className="mt-10 grid grid-cols-2 gap-px border border-zinc-800 bg-zinc-800 md:grid-cols-4">
+        {items.map((it, i) => (
+          <motion.div
+            key={it.tag}
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: i * 0.06 }}
+            className="group flex flex-col justify-between bg-[#0a0a0a] p-6 transition-colors hover:bg-zinc-900"
+          >
+            <div
+              className="text-4xl font-black text-lime-400"
+              style={{ fontFamily: "'Bebas Neue', sans-serif" }}
+            >
+              {it.tag}
+            </div>
+            <div
+              className="mt-8 text-xl font-bold uppercase text-white"
+              style={{ fontFamily: "'Bebas Neue', sans-serif", letterSpacing: "0.02em" }}
+            >
+              {it.title}
+            </div>
+          </motion.div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+/* ─────────────────────────── Closing CTA ─────────────────────────── */
+
+function ClosingCTA({ whatsappUrl, emailUrl }: { whatsappUrl: string; emailUrl: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
+  const y = useTransform(scrollYProgress, [0, 1], [40, -40]);
+
+  return (
+    <section ref={ref} className="relative mx-auto w-full max-w-6xl px-4 py-32 sm:px-6">
+      <motion.h2
+        style={{ y }}
+        className="text-6xl leading-[0.9] tracking-tighter sm:text-[8rem]"
+        // eslint-disable-next-line react/forbid-dom-props
+      >
+        <span
+          className="block text-white"
+          style={{ fontFamily: "'Bebas Neue', sans-serif" }}
+        >
+          RUN A TIGHTER
+        </span>
+        <span
+          className="block text-lime-400"
+          style={{ fontFamily: "'Bebas Neue', sans-serif" }}
+        >
+          ACADEMY.
+        </span>
+      </motion.h2>
+      <div className="mt-10 flex flex-wrap gap-4">
+        <a
+          href={whatsappUrl}
+          target="_blank"
+          rel="noreferrer"
+          className="group relative inline-flex items-center gap-2 rounded-none bg-lime-400 px-8 py-4 text-sm font-bold uppercase tracking-wider text-black transition-all duration-300 hover:-translate-y-1 hover:bg-white"
+        >
+          <WhatsAppIcon />
+          Chat on WhatsApp
+          <span
+            aria-hidden
+            className="absolute -bottom-1 -right-1 h-full w-full border-b-2 border-r-2 border-lime-400 transition-colors group-hover:border-white"
+          />
+        </a>
+        <a
+          href={emailUrl}
+          className="inline-flex items-center gap-2 rounded-none border border-zinc-700 px-8 py-4 text-sm font-bold uppercase tracking-wider transition hover:bg-zinc-900"
+        >
+          Email the team →
+        </a>
+      </div>
+    </section>
+  );
+}
+
+/* ─────────────────────────── Footer ─────────────────────────── */
+
+function Footer() {
+  return (
+    <footer className="border-t border-white/10 py-8">
+      <div className="mx-auto flex w-full max-w-6xl flex-col items-start justify-between gap-3 px-4 sm:flex-row sm:items-center sm:px-6">
+        <div className="text-[10px] uppercase tracking-[0.25em] text-white/40">
+          Academy OS · Built for performance
+        </div>
+        <div className="text-[10px] uppercase tracking-[0.25em] text-white/30">
+          No academy configured for this URL
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+/* ─────────────────────────── Bits ─────────────────────────── */
+
+function SectionHead({ eyebrow, title }: { eyebrow: string; title: string }) {
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.25em] text-lime-400">
+        <span className="h-px w-8 bg-lime-400" />
+        {eyebrow}
+      </div>
+      <motion.h2
+        initial={{ opacity: 0, y: 16 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.6 }}
+        className="max-w-3xl text-5xl leading-[0.95] tracking-tight text-white md:text-7xl"
+        style={{ fontFamily: "'Bebas Neue', sans-serif" }}
+      >
+        {title}
+      </motion.h2>
+    </div>
+  );
+}
+
+function PulseDot() {
+  return (
+    <span className="relative flex h-2 w-2">
+      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-lime-400 opacity-75" />
+      <span className="relative inline-flex h-2 w-2 rounded-full bg-lime-400" />
+    </span>
+  );
+}
 
 function WhatsAppIcon() {
   return (
@@ -324,17 +666,27 @@ function WhatsAppIcon() {
     </svg>
   );
 }
-
-function SectionHeader({ eyebrow, title }: { eyebrow: string; title: string }) {
+function BoltIcon() {
   return (
-    <div className="flex flex-col gap-3">
-      <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/40">
-        <span className="h-px w-8" style={{ background: LIME }} />
-        {eyebrow}
-      </div>
-      <h2 className="max-w-3xl font-[Bricolage_Grotesque,serif] text-3xl font-bold leading-tight text-white md:text-5xl">
-        {title}
-      </h2>
-    </div>
+    <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M13 10V3L4 14h7v7l9-11h-7z"
+      />
+    </svg>
+  );
+}
+function UsersIcon() {
+  return (
+    <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-5.13a4 4 0 11-8 0 4 4 0 018 0zm6 0a4 4 0 11-8 0 4 4 0 018 0z"
+      />
+    </svg>
   );
 }
