@@ -102,6 +102,8 @@ export function TenantProvider({ children }: { children: ReactNode }) {
     } else {
       root.style.removeProperty("--brand");
       root.style.removeProperty("--brand-ink");
+      root.style.removeProperty("--brand-accent");
+      root.style.removeProperty("--brand-surface");
     }
   }, [state.tenant]);
 
