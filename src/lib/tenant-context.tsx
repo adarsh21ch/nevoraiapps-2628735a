@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useMemo, type ReactNode } from "r
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { resolveTenantHint, type Tenant } from "./tenant";
+import { pickPreset } from "./theme-presets";
 
 type TenantState =
   | { status: "loading"; tenant: null }
