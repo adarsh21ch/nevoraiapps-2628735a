@@ -46,7 +46,6 @@ const nav: (NavItem & { requiresFeature?: "fee_tracking" })[] = [
 
 export function DashboardShell({ children }: { children: ReactNode }) {
   const { tenant, profile, signOut } = useDashboard();
-  const [open, setOpen] = useState(false);
 
   const newRegCount = useQuery({
     queryKey: ["d", "regs-new-count", tenant.id],
@@ -90,26 +89,9 @@ export function DashboardShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-screen bg-muted/30 text-foreground">
-      {/* Top bar (mobile-first) */}
+      {/* Top bar */}
       <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur">
         <div className="flex items-center gap-3 px-4 py-3 md:px-6">
-          <Sheet open={open} onOpenChange={setOpen}>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="md:hidden" aria-label="Menu">
-                <Menu className="size-5" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="w-72 p-0">
-              <SidebarInner
-                tenant={tenant}
-                items={navWithBadges}
-                onNavigate={() => setOpen(false)}
-                onSignOut={signOut}
-                role={profile.role}
-              />
-            </SheetContent>
-          </Sheet>
-
           <TenantMark tenant={tenant} />
           <div className="ml-auto flex items-center gap-2">
             <a
@@ -138,10 +120,11 @@ export function DashboardShell({ children }: { children: ReactNode }) {
           />
         </aside>
 
-        <main className="flex-1 p-4 md:p-8 max-w-6xl mx-auto w-full pb-24 md:pb-8">
+        <main className="flex-1 p-4 md:p-8 max-w-6xl mx-auto w-full pb-32 md:pb-8">
           {children ?? <Outlet />}
         </main>
       </div>
+
 
       {/* Mobile bottom tab bar */}
       <MobileTabBar items={navWithBadges} />
