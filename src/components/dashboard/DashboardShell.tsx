@@ -146,9 +146,12 @@ function MobileTabBar({ items }: { items: (NavItem & { badge?: number })[] }) {
     .map((p) => items.find((i) => i.to === p))
     .filter((x): x is NavItem & { badge?: number } => !!x);
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-30 border-t bg-background/95 backdrop-blur-lg md:hidden">
+    <nav
+      className="fixed inset-x-3 z-30 md:hidden rounded-2xl border border-border bg-background/85 shadow-[0_8px_30px_rgba(0,0,0,0.18)] backdrop-blur-xl"
+      style={{ bottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
+    >
       <div
-        className="grid pb-[max(0.25rem,env(safe-area-inset-bottom))]"
+        className="grid px-1 py-1.5"
         style={{ gridTemplateColumns: `repeat(${primary.length}, minmax(0, 1fr))` }}
       >
         {primary.map((n) => {
@@ -160,13 +163,14 @@ function MobileTabBar({ items }: { items: (NavItem & { badge?: number })[] }) {
               key={n.to}
               to={n.to}
               className={cn(
-                "relative flex flex-col items-center justify-center gap-0.5 py-2 text-[10px] font-medium transition-colors",
-                active ? "text-foreground" : "text-muted-foreground",
+                "relative flex flex-col items-center justify-center gap-1 rounded-xl py-2.5 text-[10px] font-medium transition-colors",
+                active ? "text-foreground bg-[color-mix(in_oklab,var(--brand)_14%,transparent)]" : "text-muted-foreground",
               )}
-              style={active ? { color: "var(--brand)" } : undefined}
+              style={active ? { color: "var(--brand-ink, var(--brand))" } : undefined}
             >
-              <Icon className="size-5" />
+              <Icon className="size-[22px]" />
               <span className="truncate max-w-[64px]">{n.label}</span>
+
               {n.badge ? (
                 <span
                   className="absolute top-1 right-1/4 min-w-[16px] rounded-full px-1 text-[9px] font-bold text-white"
