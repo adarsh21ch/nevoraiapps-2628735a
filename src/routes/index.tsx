@@ -6,6 +6,7 @@ import { TenantGate } from "@/components/site/TenantGate";
 import { useTenant } from "@/lib/tenant-context";
 import { feePlansQuery, sectionsBy, sectionOne, siteContentQuery } from "@/lib/site-queries";
 import cricketHeroAsset from "@/assets/cricket-stadium-hero.png.asset.json";
+import cricketHeroVideo from "@/assets/cricket-hero.mp4.asset.json";
 
 export const Route = createFileRoute("/")({
   component: HomeRoute,
@@ -36,14 +37,17 @@ function HomeContent() {
     <>
       {/* Hero */}
       <section className="relative overflow-hidden bg-neutral-950">
-        {/* 4K stadium background */}
-        <img
-          src={cricketHeroAsset.url}
-          alt=""
+        {/* 4K cinematic stadium video */}
+        <video
+          src={cricketHeroVideo.url}
+          poster={cricketHeroAsset.url}
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 h-full w-full object-cover"
-          loading="eager"
-          decoding="async"
         />
         {/* Cinematic gradient overlays for legibility */}
         <div
