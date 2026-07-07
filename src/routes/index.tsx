@@ -5,7 +5,7 @@ import { ArrowRight, Phone, MessageCircle, Sparkles, Trophy, Users, ShieldCheck 
 import { TenantGate } from "@/components/site/TenantGate";
 import { useTenant } from "@/lib/tenant-context";
 import { feePlansQuery, sectionsBy, sectionOne, siteContentQuery } from "@/lib/site-queries";
-import cricketHeroAsset from "@/assets/cricket-stadium-hero.png.asset.json";
+import cricketHeroPoster from "@/assets/cricket-hero-poster.jpg.asset.json";
 import cricketHeroVideo from "@/assets/cricket-hero.mp4.asset.json";
 
 export const Route = createFileRoute("/")({
@@ -40,7 +40,7 @@ function HomeContent() {
         {/* 4K cinematic stadium video */}
         <video
           src={cricketHeroVideo.url}
-          poster={cricketHeroAsset.url}
+          poster={cricketHeroPoster.url}
           autoPlay
           muted
           loop
