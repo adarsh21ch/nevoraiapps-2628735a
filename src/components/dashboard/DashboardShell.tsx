@@ -1,10 +1,9 @@
 import { Link, Outlet, useLocation } from "@tanstack/react-router";
-import { useState, type ReactNode } from "react";
+import { type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useDashboard } from "@/lib/dashboard-context";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
   LayoutDashboard,
   Inbox,
@@ -12,7 +11,6 @@ import {
   CalendarDays,
   Wallet,
   LogOut,
-  Menu,
   ExternalLink,
   IndianRupee,
   BarChart3,
