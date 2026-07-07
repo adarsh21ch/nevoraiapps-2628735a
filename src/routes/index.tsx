@@ -1,8 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, Phone, MessageCircle, Sparkles } from "lucide-react";
+import { motion } from "framer-motion";
+import { ArrowRight, Phone, MessageCircle, Sparkles, Trophy, Users, ShieldCheck } from "lucide-react";
 import { TenantGate } from "@/components/site/TenantGate";
-import { useTenant, useTenantState } from "@/lib/tenant-context";
+import { useTenant } from "@/lib/tenant-context";
 import { feePlansQuery, sectionsBy, sectionOne, siteContentQuery } from "@/lib/site-queries";
 
 export const Route = createFileRoute("/")({
