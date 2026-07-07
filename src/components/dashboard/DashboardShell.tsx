@@ -204,33 +204,6 @@ function MobileTabBar({ items }: { items: (NavItem & { badge?: number })[] }) {
 
 
 
-function MoreLinks() {
-  return (
-    <div className="grid grid-cols-3 gap-2 p-2">
-      {[
-        { to: "/dashboard/attendance", label: "Attendance", icon: ClipboardCheck },
-        { to: "/dashboard/reminders", label: "Reminders", icon: BellRing },
-        { to: "/dashboard/batches", label: "Batches", icon: CalendarDays },
-        { to: "/dashboard/fee-plans", label: "Fee plans", icon: Wallet },
-        { to: "/dashboard/reports", label: "Reports", icon: BarChart3 },
-        { to: "/dashboard/site", label: "Site editor", icon: Globe },
-      ].map((l) => {
-        const Icon = l.icon;
-        return (
-          <Link
-            key={l.to}
-            to={l.to}
-            className="flex flex-col items-center gap-2 rounded-xl border border-border bg-card p-4 text-xs font-medium text-foreground hover:bg-muted"
-          >
-            <Icon className="size-5" style={{ color: "var(--brand)" }} />
-            {l.label}
-          </Link>
-        );
-      })}
-    </div>
-  );
-}
-
 function TenantMark({ tenant }: { tenant: { name: string; logo_url: string | null } }) {
   return (
     <div className="flex items-center gap-2 min-w-0">
