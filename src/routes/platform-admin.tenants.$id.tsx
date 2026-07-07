@@ -255,11 +255,17 @@ function FeaturesEditor({ tenant, onSaved }: { tenant: Tenant; onSaved: () => vo
 
 /* ─── Domain ─────────────────────────────────────────── */
 
-const PLATFORM_HOSTNAME = "adarsh21ch-nevoraiapps.socialwiire.workers.dev";
-const PLATFORM_WILDCARD_SUFFIX = ".nevorai.com";
+const PLATFORM_BASE = "nevorai.com";
+const LOVABLE_A_RECORD = "185.158.133.1";
+
+function copy(v: string) {
+  if (typeof navigator === "undefined" || !navigator.clipboard) return;
+  navigator.clipboard.writeText(v).then(() => toast.success("Copied")).catch(() => {});
+}
 
 function DomainEditor({ tenant, onSaved }: { tenant: Tenant; onSaved: () => void }) {
-  const [domain, setDomain] = useState(tenant.custom_domain ?? "");
+  const platformSubdomain = `${tenant.slug}.${PLATFORM_BASE}`;
+  const [domain, setDomain] = useState(tenant.custom_domain ?? platformSubdomain);
   const save = useMutation({
     mutationFn: async () => {
       const value = domain.trim().toLowerCase() || null;
@@ -271,38 +277,60 @@ function DomainEditor({ tenant, onSaved }: { tenant: Tenant; onSaved: () => void
   });
 
   const d = domain.trim().toLowerCase();
-  const isWildcardCovered = d.endsWith(PLATFORM_WILDCARD_SUFFIX) && d !== PLATFORM_WILDCARD_SUFFIX.slice(1);
-  const hostForCname = d ? (d.split(".").length <= 2 ? "@" : d.split(".").slice(0, -2).join(".")) : "app";
+  const isPlatformSub = d.endsWith("." + PLATFORM_BASE);
+  const host = d.replace("." + PLATFORM_BASE, "");
+  const clientHostForRoot = d ? (d.split(".").length <= 2 ? "@" : d.split(".").slice(0, -2).join(".")) : "@";
 
   return (
-    <Panel title={<span className="flex items-center gap-2"><Globe className="size-4" /> Custom domain</span>}>
-      <PField label="Domain (e.g. app.kirklandcricket.in)" value={domain} onChange={setDomain} />
-
-      {!d ? (
-        <div className="rounded-md border border-white/10 bg-neutral-950 p-3 text-xs text-neutral-400">
-          Enter a domain above to see the setup instructions.
+    <Panel title={<span className="flex items-center gap-2"><Globe className="size-4" /> Academy URL & DNS</span>}>
+      <div className="rounded-md border border-white/10 bg-neutral-950 p-3 text-xs space-y-2">
+        <div className="text-neutral-400">Default academy URL (recommended)</div>
+        <div className="flex items-center gap-2 flex-wrap">
+          <code className="bg-black/40 px-2 py-1 rounded text-emerald-300 font-mono">https://{platformSubdomain}</code>
+          <Button size="sm" variant="secondary" className="h-7 text-xs" onClick={() => copy(`https://${platformSubdomain}`)}>Copy</Button>
+          <a href={`https://${platformSubdomain}`} target="_blank" rel="noreferrer" className="text-neutral-400 hover:text-white inline-flex items-center gap-1 text-xs">
+            Open <ExternalLink className="size-3" />
+          </a>
         </div>
-      ) : isWildcardCovered ? (
-        <div className="rounded-md border border-emerald-500/30 bg-emerald-500/10 p-3 text-xs text-emerald-200 space-y-1.5">
-          <div className="font-semibold text-emerald-100 flex items-center gap-1">
-            <Info className="size-3" /> No DNS setup needed
+        <p className="text-neutral-500">Share this URL with the academy — parents and students go here. It becomes live once the subdomain is connected in Lovable (steps below).</p>
+      </div>
+
+      <PField label="Custom domain (edit only if academy has their own)" value={domain} onChange={setDomain} />
+
+      {isPlatformSub ? (
+        <div className="rounded-md border border-white/10 bg-neutral-950 p-3 text-xs text-neutral-300 space-y-2">
+          <div className="font-semibold text-white flex items-center gap-1">
+            <Info className="size-3" /> One-time DNS + Lovable setup for <code className="text-emerald-300">{d}</code>
           </div>
-          <p>
-            <strong>{d}</strong> is already live on the platform's <code className="bg-black/30 px-1 rounded">*{PLATFORM_WILDCARD_SUFFIX}</code> wildcard. Just save.
-          </p>
+          <ol className="list-decimal pl-4 space-y-2 text-neutral-300">
+            <li>
+              At your DNS provider for <strong>{PLATFORM_BASE}</strong>, add an A record:
+              <pre className="mt-1 bg-neutral-900 rounded p-2 overflow-x-auto text-[11px] leading-relaxed">
+                Type: A{"\n"}Name: {host}{"\n"}Value: {LOVABLE_A_RECORD}
+              </pre>
+              <Button size="sm" variant="secondary" className="mt-1 h-6 text-[11px]" onClick={() => copy(LOVABLE_A_RECORD)}>Copy IP</Button>
+            </li>
+            <li>
+              In this Lovable project → <strong>Project Settings → Domains → Connect Domain</strong>, add:
+              <div className="mt-1 flex items-center gap-2">
+                <code className="bg-neutral-900 px-2 py-1 rounded text-[11px]">{d}</code>
+                <Button size="sm" variant="secondary" className="h-6 text-[11px]" onClick={() => copy(d)}>Copy</Button>
+              </div>
+            </li>
+            <li>Add the TXT verification record Lovable shows you. Wait a few minutes for SSL.</li>
+            <li>Come back and click <strong>Save</strong> below so the app knows this domain maps to this academy.</li>
+          </ol>
         </div>
       ) : (
         <div className="rounded-md border border-white/10 bg-neutral-950 p-3 text-xs text-neutral-300 space-y-2">
           <div className="font-semibold text-white flex items-center gap-1">
-            <Info className="size-3" /> Client-owned domain — send them this
+            <Info className="size-3" /> Academy-owned domain — send them this
           </div>
-          <p>Ask them to add this <strong>CNAME</strong> at their DNS provider:</p>
+          <p>Ask them to add an A record at their DNS provider:</p>
           <pre className="bg-neutral-900 rounded p-2 overflow-x-auto text-[11px] leading-relaxed">
-            Type: CNAME{"\n"}Host: {hostForCname} <span className="text-neutral-500">(or their subdomain)</span>{"\n"}Target: {PLATFORM_HOSTNAME}
+            Type: A{"\n"}Name: {clientHostForRoot}{"\n"}Value: {LOVABLE_A_RECORD}
           </pre>
-          <p className="text-neutral-400">
-            Then message me once it's added — I'll register <code>{d}</code> on our end to issue SSL.
-          </p>
+          <p className="text-neutral-400">Then add <code>{d}</code> in Lovable → Project Settings → Domains, verify the TXT, and click Save below.</p>
         </div>
       )}
 
