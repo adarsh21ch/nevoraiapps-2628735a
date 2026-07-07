@@ -110,6 +110,14 @@ export function SiteHeader() {
             >
               Register Now
             </Link>
+            <Link
+              to="/auth"
+              onClick={() => setOpen(false)}
+              className="mx-1 mb-2 rounded-full border border-border px-4 py-2 text-center text-xs font-semibold text-muted-foreground hover:text-foreground"
+            >
+              Owner login
+            </Link>
+
           </div>
         </div>
       ) : null}
