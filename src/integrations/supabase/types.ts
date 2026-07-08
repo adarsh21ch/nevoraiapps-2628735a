@@ -543,6 +543,7 @@ export type Database = {
         Row: {
           batch_id: string | null
           created_at: string
+          custom_fee: number | null
           dob: string | null
           fee_plan_id: string | null
           guardian_name: string | null
@@ -559,6 +560,7 @@ export type Database = {
         Insert: {
           batch_id?: string | null
           created_at?: string
+          custom_fee?: number | null
           dob?: string | null
           fee_plan_id?: string | null
           guardian_name?: string | null
@@ -575,6 +577,7 @@ export type Database = {
         Update: {
           batch_id?: string | null
           created_at?: string
+          custom_fee?: number | null
           dob?: string | null
           fee_plan_id?: string | null
           guardian_name?: string | null
