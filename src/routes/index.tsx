@@ -1,13 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { ArrowRight, Phone, MessageCircle, Sparkles, Trophy, Users, ShieldCheck } from "lucide-react";
 import { TenantGate } from "@/components/site/TenantGate";
+import { StoragedImage } from "@/components/site/StoragedImage";
 import { useTenant } from "@/lib/tenant-context";
 import { feePlansQuery, sectionsBy, sectionOne, siteContentQuery } from "@/lib/site-queries";
-import cricketHeroAsset from "@/assets/cricket-stadium-hero.png.asset.json";
-import cricketHeroVideo from "@/assets/cricket-hero.mp4.asset.json";
-import stadiumCtaVideo from "@/assets/stadium-cta.mp4.asset.json";
+import { signedUrl } from "@/lib/storage";
+import { niche } from "@/lib/niche";
 
 export const Route = createFileRoute("/")({
   component: HomeRoute,
@@ -21,8 +22,28 @@ function HomeRoute() {
   );
 }
 
-type Hero = { headline?: string; subheadline?: string; cta_label?: string; image_url?: string };
+type Hero = {
+  headline?: string;
+  subheadline?: string;
+  cta_label?: string;
+  background_url?: string;
+  background_type?: "image" | "video";
+};
 type StarPlayer = { name: string; achievement: string; photo_url?: string | null };
+type Spotlight = { name: string; role?: string; bio?: string; photo_url?: string | null };
+
+/** Resolves a `tenant-assets` storage path (or absolute URL) to a signed URL. */
+function useResolvedMediaUrl(path?: string | null) {
+  const [url, setUrl] = useState("");
+  useEffect(() => {
+    if (!path) { setUrl(""); return; }
+    if (path.startsWith("http")) { setUrl(path); return; }
+    let active = true;
+    signedUrl(path).then((u) => { if (active) setUrl(u); });
+    return () => { active = false; };
+  }, [path]);
+  return url;
+}
 
 function HomeContent() {
   const tenant = useTenant();
@@ -30,7 +51,12 @@ function HomeContent() {
   const { data: fees = [] } = useQuery(feePlansQuery(tenant.id));
   const hero = sectionOne<Hero>(sections, "hero");
   const stars = sectionsBy(sections, "star_players").map((s) => s.content as StarPlayer);
+  const spotlights = sectionsBy(sections, "spotlight").map((s) => s.content as Spotlight);
   const monthly = fees.filter((f) => f.type === "monthly").slice(0, 3);
+  const words = niche(tenant.niche);
+
+  const heroMediaUrl = useResolvedMediaUrl(hero?.background_url);
+  const hasHeroMedia = Boolean(hero?.background_url && heroMediaUrl);
 
   const wa = tenant.whatsapp?.replace(/[^\d]/g, "");
 
@@ -38,18 +64,47 @@ function HomeContent() {
     <>
       {/* Hero */}
       <section className="relative overflow-hidden bg-neutral-950">
-        {/* 4K cinematic stadium video */}
-        <video
-          src={cricketHeroVideo.url}
-          poster={cricketHeroAsset.url}
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="auto"
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 h-full w-full object-cover"
-        />
+        {hasHeroMedia ? (
+          hero?.background_type === "video" ? (
+            <video
+              src={heroMediaUrl}
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="auto"
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 h-full w-full object-cover"
+            />
+          ) : (
+            <img
+              src={heroMediaUrl}
+              alt=""
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 h-full w-full object-cover"
+            />
+          )
+        ) : (
+          /* No custom background uploaded yet — rich brand-colored mesh, never a stock/niche photo */
+          <div className="pointer-events-none absolute inset-0">
+            <div
+              className="absolute inset-0"
+              style={{ background: `linear-gradient(135deg, ${tenant.primary_color}, ${tenant.secondary_color})` }}
+            />
+            <div
+              className="absolute -top-32 -left-16 h-[480px] w-[480px] rounded-full opacity-50 blur-[130px]"
+              style={{ backgroundColor: tenant.secondary_color }}
+            />
+            <div
+              className="absolute top-1/3 -right-24 h-[420px] w-[420px] rounded-full opacity-40 blur-[120px]"
+              style={{ backgroundColor: "#ffffff" }}
+            />
+            <div
+              className="absolute -bottom-40 left-1/4 h-[440px] w-[440px] rounded-full opacity-30 blur-[130px]"
+              style={{ backgroundColor: tenant.primary_color }}
+            />
+          </div>
+        )}
         {/* Cinematic gradient overlays for legibility */}
         <div
           className="pointer-events-none absolute inset-0"
@@ -75,7 +130,7 @@ function HomeContent() {
               className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-white/90 backdrop-blur"
             >
               <Sparkles className="h-3.5 w-3.5" />
-              {tenant.niche === "gym" ? "Modern gym" : tenant.niche === "tuition" ? "Learning centre" : "Sports academy"}
+              {words.label}
             </motion.div>
             <motion.h1
               initial={{ opacity: 0, y: 16 }}
@@ -154,6 +209,44 @@ function HomeContent() {
 
 
 
+      {/* Spotlight — one big highlighted profile */}
+      {spotlights.map((p, i) => (
+        <section key={i} className="bg-background py-16">
+          <div className="mx-auto max-w-6xl px-4 sm:px-6">
+            <div
+              className={`grid items-center gap-8 overflow-hidden rounded-3xl border border-border/60 bg-card md:grid-cols-2 ${
+                i % 2 === 1 ? "md:[&>*:first-child]:order-2" : ""
+              }`}
+            >
+              <div className="relative aspect-[4/3] w-full md:aspect-auto md:h-full md:min-h-[420px]">
+                <div
+                  className="absolute inset-0"
+                  style={{ background: `linear-gradient(135deg, ${tenant.primary_color}, ${tenant.secondary_color})` }}
+                />
+                <StoragedImage
+                  path={p.photo_url}
+                  alt={p.name}
+                  className="absolute inset-0 h-full w-full object-cover object-top"
+                  fallback={
+                    <div className="absolute inset-0 flex items-center justify-center text-6xl font-bold text-white/80">
+                      {p.name.charAt(0)}
+                    </div>
+                  }
+                />
+              </div>
+              <div className="p-8 sm:p-10">
+                <div className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--brand)" }}>
+                  Spotlight
+                </div>
+                <h2 className="mt-2 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">{p.name}</h2>
+                {p.role ? <div className="mt-2 text-sm font-medium text-muted-foreground">{p.role}</div> : null}
+                {p.bio ? <p className="mt-5 text-base leading-relaxed text-muted-foreground">{p.bio}</p> : null}
+              </div>
+            </div>
+          </div>
+        </section>
+      ))}
+
       {/* Star players */}
       {stars.length > 0 ? (
         <section className="bg-muted/30 py-16">
@@ -224,24 +317,17 @@ function HomeContent() {
         </section>
       ) : null}
 
-      {/* Cinematic video CTA */}
+      {/* Brand-colored CTA band */}
       <section className="relative w-full overflow-hidden bg-neutral-950">
         <div className="relative h-[380px] w-full sm:h-[480px] lg:h-[540px]">
-          <video
-            src={stadiumCtaVideo.url}
-            autoPlay
-            muted
-            loop
-            playsInline
-            preload="auto"
-            disablePictureInPicture
-            controls={false}
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-0 h-full w-full object-cover"
+          <div
+            className="pointer-events-none absolute inset-0"
+            style={{ background: `linear-gradient(135deg, ${tenant.secondary_color}, ${tenant.primary_color})` }}
           />
-          {/* Dark overlay for legibility */}
-          <div className="pointer-events-none absolute inset-0 bg-[rgba(3,10,28,0.68)]" />
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60" />
+          <div className="pointer-events-none absolute inset-0 opacity-[0.08] [background-image:radial-gradient(white_1px,transparent_1px)] [background-size:28px_28px]" />
+          <div className="pointer-events-none absolute -top-24 -left-24 h-[420px] w-[420px] rounded-full bg-white/10 blur-[130px]" />
+          <div className="pointer-events-none absolute -bottom-24 -right-24 h-[420px] w-[420px] rounded-full bg-black/20 blur-[130px]" />
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/50" />
 
           {/* Glass CTA card */}
           <div className="relative z-10 flex h-full items-center justify-center px-4 sm:px-6">
@@ -257,7 +343,7 @@ function HomeContent() {
                 Ready to Join {tenant.name}?
               </h2>
               <p className="mx-auto mt-4 max-w-xl text-base text-white/80 sm:text-lg">
-                Start your cricket journey with professional coaching, structured training, and a pathway to competitive cricket.
+                {hero?.subheadline ?? tenant.tagline ?? `Join ${tenant.name} and start your journey today.`}
               </p>
               <div className="mt-8 flex flex-wrap justify-center gap-3">
                 <Link

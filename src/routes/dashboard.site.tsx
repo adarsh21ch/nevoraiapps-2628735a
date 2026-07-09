@@ -41,6 +41,7 @@ function SiteEditor() {
           <TabsTrigger value="hero">Hero</TabsTrigger>
           <TabsTrigger value="about">About</TabsTrigger>
           <TabsTrigger value="stars">Star players</TabsTrigger>
+          <TabsTrigger value="spotlight">Spotlight</TabsTrigger>
           <TabsTrigger value="gallery">Gallery</TabsTrigger>
           <TabsTrigger value="contact">Contact & UPI</TabsTrigger>
         </TabsList>
@@ -51,7 +52,9 @@ function SiteEditor() {
               { key: "headline", label: "Headline" },
               { key: "subheadline", label: "Subheadline", multiline: true },
               { key: "cta_label", label: "Call-to-action label" },
-            ]} />
+            ]}
+            mediaField="background_url"
+            mediaTypeField="background_type" />
         </TabsContent>
         <TabsContent value="about" className="pt-4">
           <SingleSectionEditor tenantId={tenant.id} rows={content.data ?? []} section="about"
@@ -65,6 +68,18 @@ function SiteEditor() {
             fields={[
               { key: "name", label: "Name" },
               { key: "achievement", label: "Achievement" },
+            ]}
+            imageField="photo_url" />
+        </TabsContent>
+        <TabsContent value="spotlight" className="pt-4">
+          <p className="mb-3 text-sm text-muted-foreground">
+            Highlight one standout student — a big photo + story block on your homepage. Usually just one entry.
+          </p>
+          <MultiSectionEditor tenantId={tenant.id} rows={content.data ?? []} section="spotlight"
+            fields={[
+              { key: "name", label: "Name" },
+              { key: "role", label: "Role / achievement (e.g. 'Indian Women's Rugby Team')" },
+              { key: "bio", label: "Story", multiline: true, rows: 4 },
             ]}
             imageField="photo_url" />
         </TabsContent>
@@ -82,32 +97,77 @@ function SiteEditor() {
 
 type Field = { key: string; label: string; multiline?: boolean; rows?: number };
 
-function SingleSectionEditor({ tenantId, rows, section, fields }: {
-  tenantId: string; rows: any[]; section: string; fields: Field[];
+function SingleSectionEditor({ tenantId, rows, section, fields, mediaField, mediaTypeField }: {
+  tenantId: string; rows: any[]; section: string; fields: Field[]; mediaField?: string; mediaTypeField?: string;
 }) {
   const qc = useQueryClient();
   const existing = rows.find((r) => r.section === section);
   const [values, setValues] = useState<Record<string, string>>(() => (existing?.content as any) ?? {});
+  const [mediaPreview, setMediaPreview] = useState("");
+  const [uploading, setUploading] = useState(false);
   useEffect(() => { setValues((existing?.content as any) ?? {}); }, [existing?.id]);
+  useEffect(() => {
+    const p = mediaField ? values[mediaField] : "";
+    if (p) signedUrl(p).then(setMediaPreview); else setMediaPreview("");
+  }, [values, mediaField]);
+
+  const invalidate = () => qc.invalidateQueries({ queryKey: qk.site(tenantId) });
+
+  const persist = async (content: Record<string, string>) => {
+    if (existing) {
+      const { error } = await supabase.from("site_content").update({ content }).eq("id", existing.id);
+      if (error) throw error;
+    } else {
+      const { error } = await supabase.from("site_content").insert({
+        tenant_id: tenantId, section, content, sort_order: 0,
+      });
+      if (error) throw error;
+    }
+  };
 
   const save = useMutation({
-    mutationFn: async () => {
-      if (existing) {
-        const { error } = await supabase.from("site_content").update({ content: values }).eq("id", existing.id);
-        if (error) throw error;
-      } else {
-        const { error } = await supabase.from("site_content").insert({
-          tenant_id: tenantId, section, content: values, sort_order: 0,
-        });
-        if (error) throw error;
-      }
-    },
-    onSuccess: () => { toast.success("Saved"); qc.invalidateQueries({ queryKey: qk.site(tenantId) }); },
+    mutationFn: () => persist(values),
+    onSuccess: () => { toast.success("Saved"); invalidate(); },
     onError: (e: Error) => toast.error(e.message),
   });
 
+  async function onMediaFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file || !mediaField) return;
+    setUploading(true);
+    try {
+      const path = await uploadTenantFile(tenantId, section, file);
+      const type = file.type.startsWith("video/") ? "video" : "image";
+      const next = { ...values, [mediaField]: path, ...(mediaTypeField ? { [mediaTypeField]: type } : {}) };
+      setValues(next);
+      await persist(next);
+      toast.success("Background updated");
+      invalidate();
+    } catch (err: any) { toast.error(err.message); }
+    finally { setUploading(false); }
+  }
+
   return (
     <Card className="p-5 space-y-3">
+      {mediaField ? (
+        <div className="space-y-1.5">
+          <Label>Background image or video</Label>
+          <div className="flex items-center gap-3">
+            {mediaPreview && (
+              values[mediaTypeField ?? ""] === "video" ? (
+                <video src={mediaPreview} className="h-16 w-24 rounded-md object-cover border" muted />
+              ) : (
+                <img src={mediaPreview} alt="" className="h-16 w-24 rounded-md object-cover border" />
+              )
+            )}
+            <label className="text-xs cursor-pointer inline-flex items-center gap-1 px-3 py-2 rounded-md border hover:bg-muted">
+              <Upload className="size-3" /> {uploading ? "Uploading…" : "Upload background"}
+              <input type="file" accept="image/*,video/*" className="hidden" onChange={onMediaFile} />
+            </label>
+          </div>
+          <p className="text-xs text-muted-foreground">Leave empty to use your brand-color background instead.</p>
+        </div>
+      ) : null}
       {fields.map((f) => (
         <div key={f.key} className="space-y-1.5">
           <Label>{f.label}</Label>
@@ -188,8 +248,12 @@ function ItemCard({ row, fields, imageField, tenantId, onChange }: {
     setUploading(true);
     try {
       const path = await uploadTenantFile(tenantId, row.section, f);
-      setValues({ ...values, [imageField]: path });
-      toast.success("Uploaded — remember to Save");
+      const next = { ...values, [imageField]: path };
+      setValues(next);
+      const { error } = await supabase.from("site_content").update({ content: next }).eq("id", row.id);
+      if (error) throw error;
+      toast.success("Photo updated");
+      onChange();
     } catch (err: any) { toast.error(err.message); }
     finally { setUploading(false); }
   }
@@ -267,8 +331,13 @@ function ContactEditor() {
   async function upload(field: "upi_qr_url" | "logo_url", file: File) {
     try {
       const path = await uploadTenantFile(tenant.id, field, file);
-      setForm({ ...form, [field]: path });
-      toast.success("Uploaded — remember to Save");
+      const next = { ...form, [field]: path };
+      setForm(next);
+      const { error } = await supabase.from("tenants").update({ [field]: path } as any).eq("id", tenant.id);
+      if (error) throw error;
+      qc.invalidateQueries({ queryKey: ["dashboard-tenant", tenant.id] });
+      qc.invalidateQueries({ queryKey: ["current-tenant"] });
+      toast.success(field === "logo_url" ? "Logo updated" : "QR updated");
     } catch (e: any) { toast.error(e.message); }
   }
 
